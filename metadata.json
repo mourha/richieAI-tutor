@@ -1,0 +1,7 @@
+{
+  "name": "Richie - Your AI Tutor",
+  "description": "An interactive AI-powered learning companion that helps you master any subject through voice-enabled lessons and personalized tutors.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
