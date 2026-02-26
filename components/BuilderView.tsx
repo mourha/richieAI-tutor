@@ -41,75 +41,75 @@ export const BuilderView: React.FC<BuilderViewProps> = ({ onSave, onBack }) => {
         <ArrowLeft className="w-5 h-5 mr-2" /> Back to Dashboard
       </button>
 
-      <div className="bg-white rounded-[40px] border border-gray-100 p-8 md:p-12 shadow-sm">
-        <div className="flex items-center mb-10">
-          <div className="w-16 h-16 bg-orange-100 rounded-3xl flex items-center justify-center mr-6">
-            <Sparkles className="w-8 h-8 text-orange-600" />
+      <div className="bg-white rounded-[32px] lg:rounded-[40px] border border-indigo-50 p-6 lg:p-12 shadow-sm">
+        <div className="flex items-center mb-8 lg:mb-10">
+          <div className="w-12 h-12 lg:w-16 lg:h-16 bg-indigo-50 rounded-2xl lg:rounded-3xl flex items-center justify-center mr-4 lg:mr-6">
+            <Sparkles className="w-6 h-6 lg:w-8 lg:h-8 text-indigo-600" />
           </div>
           <div>
-            <h1 className="text-3xl font-black text-gray-900">Create Companion</h1>
-            <p className="text-gray-500">Design your perfect AI learning partner.</p>
+            <h1 className="text-2xl lg:text-3xl font-black text-indigo-950">Create Companion</h1>
+            <p className="text-indigo-400 text-sm lg:text-base">Design your perfect AI learning partner.</p>
           </div>
         </div>
 
-        <div className="space-y-8">
+        <div className="space-y-6 lg:space-y-8">
           <div>
-            <label className="block text-sm font-black text-gray-400 uppercase tracking-widest mb-3">Companion Name</label>
+            <label className="block text-[10px] lg:text-sm font-black text-indigo-300 uppercase tracking-widest mb-2 lg:mb-3">Companion Name</label>
             <input 
               type="text" 
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Professor Pipsqueak" 
-              className="w-full bg-gray-50 border-2 border-transparent focus:border-orange-500 focus:bg-white rounded-2xl py-4 px-6 outline-none transition-all text-lg font-bold"
+              className="w-full bg-indigo-50/30 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-xl lg:rounded-2xl py-3 lg:py-4 px-5 lg:px-6 outline-none transition-all text-base lg:text-lg font-bold text-indigo-950"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-black text-gray-400 uppercase tracking-widest mb-3">Topic to Master</label>
+            <label className="block text-[10px] lg:text-sm font-black text-indigo-300 uppercase tracking-widest mb-2 lg:mb-3">Topic to Master</label>
             <input 
               type="text" 
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
               placeholder="e.g. Quantum Physics or Baking bread" 
-              className="w-full bg-gray-50 border-2 border-transparent focus:border-orange-500 focus:bg-white rounded-2xl py-4 px-6 outline-none transition-all text-lg font-bold"
+              className="w-full bg-indigo-50/30 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-xl lg:rounded-2xl py-3 lg:py-4 px-5 lg:px-6 outline-none transition-all text-base lg:text-lg font-bold text-indigo-950"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-black text-gray-400 uppercase tracking-widest mb-3">Choose Subject</label>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <label className="block text-[10px] lg:text-sm font-black text-indigo-300 uppercase tracking-widest mb-2 lg:mb-3">Choose Subject</label>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 lg:gap-4">
               {subjects.map((sub) => (
                 <button
                   key={sub}
                   onClick={() => setSelectedSubject(sub)}
-                  className={`relative p-4 rounded-2xl border-2 transition-all flex flex-col items-center text-center ${
+                  className={`relative p-3 lg:p-4 rounded-xl lg:rounded-2xl border-2 transition-all flex flex-col items-center text-center ${
                     selectedSubject === sub 
-                      ? 'border-orange-500 bg-orange-50' 
-                      : 'border-gray-100 bg-white hover:border-gray-200'
+                      ? 'border-indigo-500 bg-indigo-50' 
+                      : 'border-indigo-50/50 bg-white hover:border-indigo-100'
                   }`}
                 >
                   {selectedSubject === sub && (
-                    <div className="absolute top-2 right-2 bg-orange-500 text-white rounded-full p-0.5">
-                      <Check className="w-3 h-3" />
+                    <div className="absolute top-1.5 lg:top-2 right-1.5 lg:right-2 bg-indigo-500 text-white rounded-full p-0.5">
+                      <Check className="w-2.5 lg:w-3 h-2.5 lg:h-3" />
                     </div>
                   )}
-                  <div className={`w-10 h-10 rounded-xl ${SUBJECT_METADATA[sub].color} flex items-center justify-center mb-2`}>
-                    {SUBJECT_METADATA[sub].icon}
+                  <div className={`w-8 h-8 lg:w-10 lg:h-10 rounded-lg lg:rounded-xl ${SUBJECT_METADATA[sub].color} flex items-center justify-center mb-1.5 lg:mb-2 shrink-0`}>
+                    {React.cloneElement(SUBJECT_METADATA[sub].icon as React.ReactElement, { className: 'w-4 h-4 lg:w-5 lg:h-5' })}
                   </div>
-                  <span className={`text-xs font-bold ${selectedSubject === sub ? 'text-orange-600' : 'text-gray-500'}`}>{sub}</span>
+                  <span className={`text-[10px] lg:text-xs font-bold ${selectedSubject === sub ? 'text-indigo-600' : 'text-indigo-400'}`}>{sub}</span>
                 </button>
               ))}
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-black text-gray-400 uppercase tracking-widest mb-3">Bio / Personality (Optional)</label>
+            <label className="block text-[10px] lg:text-sm font-black text-indigo-300 uppercase tracking-widest mb-2 lg:mb-3">Bio / Personality (Optional)</label>
             <textarea 
               rows={3}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Tell Richie how this tutor should act..." 
-              className="w-full bg-gray-50 border-2 border-transparent focus:border-orange-500 focus:bg-white rounded-2xl py-4 px-6 outline-none transition-all font-medium"
+              className="w-full bg-indigo-50/30 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-xl lg:rounded-2xl py-3 lg:py-4 px-5 lg:px-6 outline-none transition-all font-medium text-indigo-950"
             />
           </div>
 
@@ -118,7 +118,7 @@ export const BuilderView: React.FC<BuilderViewProps> = ({ onSave, onBack }) => {
             size="lg" 
             onClick={handleCreate}
             disabled={!name || !topic}
-            className="rounded-3xl !py-6 text-xl shadow-xl shadow-orange-500/20"
+            className="rounded-2xl lg:rounded-3xl !py-4 lg:!py-6 text-lg lg:text-xl shadow-xl shadow-indigo-500/20"
           >
             Create Learning Companion
           </Button>

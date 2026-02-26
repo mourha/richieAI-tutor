@@ -3,11 +3,13 @@ import React from 'react';
 import { 
   Home, 
   Library, 
-  User, 
+  User as UserIcon, 
   LogOut, 
   Menu, 
   X,
-  Sparkles
+  Sparkles,
+  CreditCard,
+  LogIn
 } from 'lucide-react';
 import { AppView } from '../types';
 
@@ -15,15 +17,17 @@ interface LayoutProps {
   children: React.ReactNode;
   activeView: AppView;
   onNavigate: (view: AppView) => void;
+  user: { name: string; email: string } | null;
 }
 
-export const Layout: React.FC<LayoutProps> = ({ children, activeView, onNavigate }) => {
+export const Layout: React.FC<LayoutProps> = ({ children, activeView, onNavigate, user }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 
   const navItems = [
     { id: 'dashboard', label: 'Home', icon: Home },
     { id: 'library', label: 'Tutors', icon: Library },
-    { id: 'journey', label: 'Profile', icon: User },
+    { id: 'journey', label: 'Journey', icon: UserIcon },
+    { id: 'pricing', label: 'Pricing', icon: CreditCard },
   ];
 
   const handleNavClick = (view: AppView) => {
@@ -32,9 +36,9 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeView, onNavigate
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-[100dvh] flex flex-col bg-[#f8faff]">
       {/* Navbar */}
-      <nav className="sticky top-0 z-50 bg-white/70 backdrop-blur-xl border-b border-indigo-100/50 px-6 md:px-12 py-4 flex items-center justify-between">
+      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-indigo-100/50 px-4 md:px-12 py-3 lg:py-4 flex items-center justify-between shadow-sm">
         <div className="flex items-center cursor-pointer group" onClick={() => handleNavClick('dashboard')}>
           <div className="w-12 h-12 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl flex items-center justify-center mr-4 shadow-xl shadow-indigo-500/20 group-hover:scale-105 transition-transform">
              <Sparkles className="text-white w-6 h-6" />
@@ -58,12 +62,33 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeView, onNavigate
             </button>
           ))}
           <div className="flex items-center ml-6 pl-6 border-l border-indigo-50">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-purple-100 to-indigo-100 flex items-center justify-center overflow-hidden border-2 border-white shadow-sm mr-4">
-               <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Adrian" alt="User" />
-            </div>
-            <button className="p-2.5 text-indigo-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all">
-              <LogOut className="w-5 h-5" />
-            </button>
+            {user ? (
+              <>
+                <div className="flex items-center mr-4">
+                  <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-purple-100 to-indigo-100 flex items-center justify-center overflow-hidden border-2 border-white shadow-sm mr-3">
+                    <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`} alt="User" />
+                  </div>
+                  <div className="hidden lg:block">
+                    <p className="text-xs font-black text-indigo-950 leading-none mb-1">{user.name}</p>
+                    <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Free Plan</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => window.location.reload()}
+                  className="p-2.5 text-indigo-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                >
+                  <LogOut className="w-5 h-5" />
+                </button>
+              </>
+            ) : (
+              <button 
+                onClick={() => handleNavClick('auth')}
+                className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 text-white text-sm font-black rounded-xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200"
+              >
+                <LogIn className="w-4 h-4" />
+                Sign In
+              </button>
+            )}
           </div>
         </div>
 
@@ -90,9 +115,21 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeView, onNavigate
               </button>
             ))}
             <hr className="border-indigo-50 my-4" />
-            <button className="flex items-center p-4 text-xl font-bold text-red-500 hover:bg-red-50 rounded-2xl">
-               <LogOut className="w-6 h-6 mr-4" /> Sign Out
-            </button>
+            {user ? (
+              <button 
+                onClick={() => window.location.reload()}
+                className="flex items-center p-4 text-xl font-bold text-red-500 hover:bg-red-50 rounded-2xl"
+              >
+                 <LogOut className="w-6 h-6 mr-4" /> Sign Out
+              </button>
+            ) : (
+              <button 
+                onClick={() => handleNavClick('auth')}
+                className="flex items-center p-4 text-xl font-bold text-indigo-600 hover:bg-indigo-50 rounded-2xl"
+              >
+                 <LogIn className="w-6 h-6 mr-4" /> Sign In
+              </button>
+            )}
           </div>
         </div>
       )}

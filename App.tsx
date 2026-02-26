@@ -5,11 +5,14 @@ import { Dashboard } from './components/Dashboard';
 import { LessonView } from './components/LessonView';
 import { MyJourney } from './components/MyJourney';
 import { BuilderView } from './components/BuilderView';
+import { AuthView } from './components/AuthView';
+import { PricingView } from './components/PricingView';
 import { AppView, Companion, UserProgress } from './types';
 import { INITIAL_COMPANIONS } from './constants';
 
 const App: React.FC = () => {
   const [activeView, setActiveView] = useState<AppView>('dashboard');
+  const [user, setUser] = useState<{ name: string; email: string } | null>(null);
   const [selectedCompanionId, setSelectedCompanionId] = useState<string | null>(null);
   const [customCompanions, setCustomCompanions] = useState<Companion[]>([]);
   const [userProgress, setUserProgress] = useState<UserProgress>({
@@ -82,12 +85,19 @@ const App: React.FC = () => {
       case 'dashboard':
         return <Dashboard onNavigate={handleNavigate} recentLessons={userProgress.history.slice(0, 5)} />;
       case 'journey':
-        return <MyJourney progress={userProgress} />;
+        return <MyJourney progress={userProgress} user={user} />;
       case 'builder':
         return <BuilderView onSave={handleSaveCompanion} onBack={() => setActiveView('dashboard')} />;
       case 'lesson':
         const comp = allCompanions.find(c => c.id === selectedCompanionId) || allCompanions[0];
         return <LessonView companion={comp} onEnd={handleEndLesson} onNavigate={handleNavigate} />;
+      case 'pricing':
+        return <PricingView />;
+      case 'auth':
+        return <AuthView onSuccess={() => {
+          setUser({ name: 'Guest User', email: 'guest@example.com' });
+          setActiveView('dashboard');
+        }} />;
       case 'library':
         return (
           <div className="space-y-8 animate-in fade-in duration-500">
@@ -116,7 +126,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <Layout activeView={activeView} onNavigate={handleNavigate}>
+    <Layout activeView={activeView} onNavigate={handleNavigate} user={user}>
       {renderContent()}
     </Layout>
   );
