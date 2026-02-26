@@ -5,23 +5,33 @@ import { GoogleGenAI, Type } from "@google/genai";
  * Helper to perform retries with exponential backoff.
  * Useful for handling transient 500 errors or RPC proxy hiccups.
  */
-async function withRetry<T>(fn: () => Promise<T>, maxRetries = 3): Promise<T> {
+async function withRetry<T>(fn: () => Promise<T>, maxRetries = 5): Promise<T> {
   let lastError: any;
   for (let i = 0; i < maxRetries; i++) {
     try {
+      if (typeof navigator !== 'undefined' && !navigator.onLine) {
+        throw new Error("Network is offline. Please check your connection.");
+      }
       return await fn();
     } catch (err: any) {
       lastError = err;
-      // Retry on 5xx or specific RPC/XHR failures
+      
+      // Determine if the error is retryable
+      const errorMessage = err?.message?.toLowerCase() || "";
       const isRetryable = 
         err?.status === "UNKNOWN" || 
         err?.code === 500 || 
-        err?.message?.includes("Rpc failed") ||
-        err?.message?.includes("500");
+        err?.code === 429 || // Rate limit
+        errorMessage.includes("rpc failed") ||
+        errorMessage.includes("500") ||
+        errorMessage.includes("timeout") ||
+        errorMessage.includes("network error") ||
+        errorMessage.includes("failed to fetch");
         
       if (isRetryable && i < maxRetries - 1) {
-        const delay = Math.pow(2, i) * 1000 + Math.random() * 1000;
-        console.warn(`API call failed (attempt ${i + 1}). Retrying in ${Math.round(delay)}ms...`, err);
+        // Exponential backoff: 1s, 2s, 4s, 8s... with jitter
+        const delay = Math.min(Math.pow(2, i) * 1000 + Math.random() * 1000, 10000);
+        console.warn(`API call failed (attempt ${i + 1}/${maxRetries}). Retrying in ${Math.round(delay)}ms...`, err);
         await new Promise(resolve => setTimeout(resolve, delay));
         continue;
       }

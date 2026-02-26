@@ -67,7 +67,7 @@ export const MyJourney: React.FC<MyJourneyProps> = ({ progress, user }) => {
                 <tr key={lesson.id} className="group">
                   <td className="py-4 lg:py-6 flex items-center">
                     <div className={`w-10 h-10 lg:w-12 lg:h-12 rounded-xl ${SUBJECT_METADATA[lesson.subject].color} flex items-center justify-center mr-4 shrink-0`}>
-                      {React.cloneElement(SUBJECT_METADATA[lesson.subject].icon as React.ReactElement, { className: 'w-5 h-5 lg:w-6 lg:h-6' })}
+                      {React.cloneElement(SUBJECT_METADATA[lesson.subject].icon as React.ReactElement, { className: 'w-5 h-5 lg:w-6 lg:h-6' } as any)}
                     </div>
                     <div className="min-w-0">
                       <div className="font-bold text-indigo-950 group-hover:text-indigo-600 transition-colors truncate">{lesson.companionName}</div>

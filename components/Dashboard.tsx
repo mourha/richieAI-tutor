@@ -81,7 +81,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate, recentLessons 
               recentLessons.map((lesson) => (
                 <div key={lesson.id} className="flex items-center group cursor-pointer hover:bg-indigo-50/50 p-3 lg:p-4 -m-3 lg:-m-4 rounded-2xl lg:rounded-3xl transition-all">
                   <div className={`w-12 h-12 lg:w-16 lg:h-16 rounded-xl lg:rounded-2xl ${SUBJECT_METADATA[lesson.subject].color} flex items-center justify-center mr-4 lg:mr-6 shadow-sm group-hover:scale-105 transition-transform shrink-0`}>
-                    {React.cloneElement(SUBJECT_METADATA[lesson.subject].icon as React.ReactElement, { className: 'w-5 h-5 lg:w-7 lg:h-7 text-indigo-600' })}
+                    {React.cloneElement(SUBJECT_METADATA[lesson.subject].icon as React.ReactElement, { className: 'w-5 h-5 lg:w-7 lg:h-7 text-indigo-600' } as any)}
                   </div>
                   <div className="flex-1 min-w-0">
                     <h4 className="font-black text-indigo-950 text-base lg:text-lg truncate">{lesson.companionName}</h4>

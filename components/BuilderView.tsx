@@ -94,7 +94,7 @@ export const BuilderView: React.FC<BuilderViewProps> = ({ onSave, onBack }) => {
                     </div>
                   )}
                   <div className={`w-8 h-8 lg:w-10 lg:h-10 rounded-lg lg:rounded-xl ${SUBJECT_METADATA[sub].color} flex items-center justify-center mb-1.5 lg:mb-2 shrink-0`}>
-                    {React.cloneElement(SUBJECT_METADATA[sub].icon as React.ReactElement, { className: 'w-4 h-4 lg:w-5 lg:h-5' })}
+                    {React.cloneElement(SUBJECT_METADATA[sub].icon as React.ReactElement, { className: 'w-4 h-4 lg:w-5 lg:h-5' } as any)}
                   </div>
                   <span className={`text-[10px] lg:text-xs font-bold ${selectedSubject === sub ? 'text-indigo-600' : 'text-indigo-400'}`}>{sub}</span>
                 </button>

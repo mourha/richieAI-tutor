@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import ReactMarkdown from 'react-markdown';
 // Added Sparkles to imports
 import { Mic, MicOff, RotateCcw, X, Send, Play, Pause, Waves, Volume2, Info, AlertCircle, RefreshCw, ChevronLeft, Sparkles } from 'lucide-react';
 import { Companion, AppView } from '../types';
@@ -54,6 +55,7 @@ async function decodeAudioData(
 }
 
 export const LessonView: React.FC<LessonViewProps> = ({ companion, onEnd, onNavigate }) => {
+  const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
   const [isLiveMode, setIsLiveMode] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isThinking, setIsThinking] = useState(false);
@@ -67,6 +69,19 @@ export const LessonView: React.FC<LessonViewProps> = ({ companion, onEnd, onNavi
   const audioContextRef = useRef<AudioContext | null>(null);
   const nextStartTimeRef = useRef<number>(0);
   const sourcesRef = useRef<Set<AudioBufferSourceNode>>(new Set());
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   const greet = useCallback(async () => {
     setIsThinking(true);
@@ -140,6 +155,10 @@ export const LessonView: React.FC<LessonViewProps> = ({ companion, onEnd, onNavi
     }
 
     try {
+      if (!navigator.onLine) {
+        setError("Kuna offline. Da fatan za a duba haɗin yanar gizon ku. (You are offline. Please check your internet connection.)");
+        return;
+      }
       setError(null);
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
       const inputCtx = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 16000 });
@@ -228,37 +247,42 @@ export const LessonView: React.FC<LessonViewProps> = ({ companion, onEnd, onNavi
   };
 
   return (
-    <div className="max-w-7xl mx-auto h-[calc(100dvh-120px)] lg:h-[calc(100vh-160px)] flex flex-col animate-in fade-in duration-1000">
+    <div className="max-w-7xl mx-auto h-[calc(100dvh-80px)] lg:h-[calc(100vh-160px)] flex flex-col animate-in fade-in duration-1000">
       {/* Lesson Header */}
-      <div className="bg-white/70 backdrop-blur-xl border border-indigo-100/50 rounded-[24px] lg:rounded-[32px] p-3 lg:p-5 mb-4 lg:mb-6 flex items-center justify-between shadow-sm">
+      <div className="bg-white/70 backdrop-blur-xl border border-indigo-100/50 rounded-[24px] lg:rounded-[32px] p-3 lg:p-5 mb-3 lg:mb-6 flex items-center justify-between shadow-sm shrink-0">
         <div className="flex items-center min-w-0">
           <button 
             onClick={onEnd}
-            className="p-2 lg:p-3 mr-3 lg:mr-4 bg-indigo-50 text-indigo-600 rounded-xl lg:rounded-2xl hover:bg-indigo-100 transition-colors shrink-0"
+            className="p-2 lg:p-3 mr-2 lg:mr-4 bg-indigo-50 text-indigo-600 rounded-xl lg:rounded-2xl hover:bg-indigo-100 transition-colors shrink-0"
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
           <div className="flex items-center min-w-0">
-            <div className={`w-10 h-10 lg:w-12 lg:h-12 rounded-xl lg:rounded-2xl ${SUBJECT_METADATA[companion.subject].color} flex items-center justify-center mr-3 lg:mr-4 shadow-sm shrink-0`}>
-               {React.cloneElement(SUBJECT_METADATA[companion.subject].icon as React.ReactElement, { className: 'w-5 h-5 lg:w-6 lg:h-6' })}
+            <div className={`w-9 h-9 lg:w-12 lg:h-12 rounded-xl lg:rounded-2xl ${SUBJECT_METADATA[companion.subject].color} flex items-center justify-center mr-3 lg:mr-4 shadow-sm shrink-0`}>
+               {React.cloneElement(SUBJECT_METADATA[companion.subject].icon as React.ReactElement, { className: 'w-5 h-5 lg:w-6 lg:h-6' } as any)}
             </div>
             <div className="truncate">
               <div className="flex items-center gap-2">
-                 <h2 className="text-lg lg:text-xl font-black text-indigo-950 truncate">{companion.name}</h2>
+                 <h2 className="text-base lg:text-xl font-black text-indigo-950 truncate">{companion.name}</h2>
                  <span className="hidden sm:inline-block bg-indigo-950 text-white text-[8px] lg:text-[9px] font-black px-2 py-0.5 rounded-lg uppercase tracking-widest">{companion.subject}</span>
               </div>
-              <p className="text-[10px] lg:text-xs text-indigo-400 font-bold uppercase tracking-wider truncate">{companion.topic}</p>
+              <p className="text-[9px] lg:text-xs text-indigo-400 font-bold uppercase tracking-wider truncate">{companion.topic}</p>
             </div>
           </div>
         </div>
         
         <div className="flex items-center space-x-2 lg:space-x-4 shrink-0">
-           {isLiveMode && (
-             <div className="flex items-center bg-indigo-600 text-white px-3 lg:px-5 py-1.5 lg:py-2 rounded-xl lg:rounded-2xl text-[8px] lg:text-[10px] font-black uppercase tracking-widest animate-pulse shadow-lg shadow-indigo-200">
-                <Waves className="w-3 h-3 lg:w-4 lg:h-4 mr-1.5 lg:mr-2" /> <span className="hidden xs:inline">Live Now</span>
+           {!isOnline && (
+             <div className="flex items-center bg-amber-50 text-amber-600 px-2 lg:px-3 py-1 lg:py-1.5 rounded-lg text-[8px] lg:text-[10px] font-black uppercase tracking-widest border border-amber-100">
+                <AlertCircle className="w-3 h-3 mr-1" /> Offline
              </div>
            )}
-           <div className="bg-white px-3 lg:px-4 py-1.5 lg:py-2 rounded-lg lg:rounded-xl text-indigo-950 font-black text-xs lg:text-sm border border-indigo-50 shadow-sm hidden sm:block">
+           {isLiveMode && (
+             <div className="flex items-center bg-indigo-600 text-white px-2.5 lg:px-5 py-1.5 lg:py-2 rounded-xl lg:rounded-2xl text-[8px] lg:text-[10px] font-black uppercase tracking-widest animate-pulse shadow-lg shadow-indigo-200">
+                <Waves className="w-3 h-3 lg:w-4 lg:h-4 mr-1 lg:mr-2" /> <span className="hidden xs:inline">Live</span>
+             </div>
+           )}
+           <div className="bg-white px-2.5 lg:px-4 py-1.5 lg:py-2 rounded-lg lg:rounded-xl text-indigo-950 font-black text-[10px] lg:text-sm border border-indigo-50 shadow-sm hidden sm:block">
              {companion.duration}
            </div>
            <button 
@@ -272,98 +296,100 @@ export const LessonView: React.FC<LessonViewProps> = ({ companion, onEnd, onNavi
       </div>
 
       {/* Main Lesson Area */}
-      <div className="flex-1 flex flex-col lg:grid lg:grid-cols-4 gap-4 lg:gap-6 overflow-hidden">
+      <div className="flex-1 flex flex-col lg:grid lg:grid-cols-4 gap-4 lg:gap-6 overflow-hidden min-h-0">
         {/* Visual/Chat Section */}
-        <div className="flex-1 lg:col-span-3 flex flex-col bg-white rounded-[32px] lg:rounded-[40px] border border-indigo-50 overflow-hidden shadow-sm min-h-0">
+        <div className="flex-1 lg:col-span-3 flex flex-col bg-white rounded-[28px] lg:rounded-[40px] border border-indigo-50 overflow-hidden shadow-sm min-h-0">
           {/* Visual Canvas */}
-          <div className={`h-32 lg:h-[30%] transition-all duration-1000 relative flex items-center justify-center p-6 lg:p-12 overflow-hidden shrink-0 ${
+          <div className={`h-28 lg:h-[30%] transition-all duration-1000 relative flex items-center justify-center p-4 lg:p-12 overflow-hidden shrink-0 ${
             isLiveMode 
             ? 'bg-gradient-to-br from-indigo-950 via-indigo-900 to-purple-900' 
             : 'bg-indigo-50/30'
           }`}>
              {/* Background Effects */}
              <div className="absolute inset-0 opacity-10">
-               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] lg:w-[500px] h-[300px] lg:h-[500px] bg-white rounded-full blur-[80px] lg:blur-[120px]"></div>
+               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[250px] lg:w-[500px] h-[250px] lg:h-[500px] bg-white rounded-full blur-[60px] lg:blur-[120px]"></div>
              </div>
              
-             <div className="text-center z-10 relative flex lg:flex-col items-center lg:justify-center gap-4 lg:gap-0">
-                <div className={`w-16 h-16 lg:w-28 lg:h-28 rounded-2xl lg:rounded-[40px] flex items-center justify-center floating shadow-2xl transition-all duration-700 shrink-0 ${
+             <div className="text-center z-10 relative flex lg:flex-col items-center lg:justify-center gap-3 lg:gap-0">
+                <div className={`w-14 h-14 lg:w-28 lg:h-28 rounded-2xl lg:rounded-[40px] flex items-center justify-center floating shadow-2xl transition-all duration-700 shrink-0 ${
                   isLiveMode 
                   ? 'bg-white/10 backdrop-blur-2xl border border-white/20' 
                   : 'bg-white border-2 border-indigo-50 shadow-indigo-200/50'
                 }`}>
                    {React.cloneElement(SUBJECT_METADATA[companion.subject].icon as React.ReactElement, { 
-                     className: `w-8 h-8 lg:w-14 lg:h-14 ${isLiveMode ? 'text-white' : 'text-indigo-600'}` 
-                   })}
+                     className: `w-7 h-7 lg:w-14 lg:h-14 ${isLiveMode ? 'text-white' : 'text-indigo-600'}` 
+                   } as any)}
                 </div>
                 <div className="text-left lg:text-center">
-                  <h3 className={`text-xl lg:text-3xl font-black tracking-tight ${isLiveMode ? 'text-white' : 'text-indigo-950'}`}>{companion.name}</h3>
+                  <h3 className={`text-lg lg:text-3xl font-black tracking-tight ${isLiveMode ? 'text-white' : 'text-indigo-950'}`}>{companion.name}</h3>
                   {isLiveMode ? (
-                    <div className="flex items-center lg:justify-center gap-1.5 mt-1 lg:mt-3">
+                    <div className="flex items-center lg:justify-center gap-1 mt-0.5 lg:mt-3">
                       {[...Array(5)].map((_, i) => (
                         <div key={i} className="w-1 h-1 lg:w-1.5 lg:h-1.5 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: `${i * 0.1}s` }}></div>
                       ))}
-                      <p className="text-indigo-200 text-[10px] lg:text-xs font-bold uppercase tracking-widest ml-1 lg:ml-2">Listening...</p>
+                      <p className="text-indigo-200 text-[8px] lg:text-xs font-bold uppercase tracking-widest ml-1 lg:ml-2">Listening...</p>
                     </div>
                   ) : (
-                    <p className="text-indigo-300 text-[10px] lg:text-sm font-bold mt-0.5 lg:mt-1">Chatting via text</p>
+                    <p className="text-indigo-300 text-[9px] lg:text-sm font-bold mt-0.5 lg:mt-1">Chatting via text</p>
                   )}
                 </div>
              </div>
 
-             <div className={`absolute inset-0 pointer-events-none border-[8px] lg:border-[16px] ${isLiveMode ? 'border-white/5' : 'border-indigo-100/10'} rounded-[32px] lg:rounded-[40px]`}></div>
+             <div className={`absolute inset-0 pointer-events-none border-[8px] lg:border-[16px] ${isLiveMode ? 'border-white/5' : 'border-indigo-100/10'} rounded-[28px] lg:rounded-[40px]`}></div>
           </div>
 
           {/* Chat/Transcript Section */}
-          <div className="flex-1 p-4 lg:p-8 overflow-y-auto space-y-4 lg:space-y-6 bg-white min-h-0">
+          <div className="flex-1 p-4 lg:p-8 overflow-y-auto space-y-4 lg:space-y-6 bg-white min-h-0 scroll-smooth">
             {messages.length === 0 && !isThinking && !error && (
               <div className="h-full flex flex-col items-center justify-center text-indigo-200">
-                <div className="w-20 h-20 bg-indigo-50 rounded-full flex items-center justify-center mb-4">
-                  <Sparkles className="w-10 h-10 opacity-20" />
+                <div className="w-16 h-16 lg:w-20 lg:h-20 bg-indigo-50 rounded-full flex items-center justify-center mb-4">
+                  <Sparkles className="w-8 h-8 lg:w-10 lg:h-10 opacity-20" />
                 </div>
-                <p className="font-bold">Establishing connection...</p>
+                <p className="font-bold text-sm lg:text-base">Establishing connection...</p>
               </div>
             )}
             {messages.map((m, idx) => (
               <div key={idx} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'} animate-in slide-in-from-bottom-2 duration-300`}>
-                <div className={`max-w-[80%] px-6 py-4 rounded-[24px] text-base leading-relaxed font-medium ${
+                <div className={`max-w-[85%] lg:max-w-[80%] px-4 lg:px-6 py-3 lg:py-4 rounded-[20px] lg:rounded-[24px] text-sm lg:text-base leading-relaxed font-medium ${
                   m.role === 'user' 
                     ? 'bg-gradient-to-br from-indigo-600 to-purple-600 text-white rounded-br-none shadow-xl shadow-indigo-500/10' 
                     : 'bg-indigo-50/50 text-indigo-950 rounded-bl-none border border-indigo-100/50'
                 }`}>
-                  {m.text}
+                  <div className="markdown-body">
+                    <ReactMarkdown>{m.text}</ReactMarkdown>
+                  </div>
                 </div>
               </div>
             ))}
             {transcription && (
                <div className="flex justify-start">
-                 <div className="max-w-[85%] px-6 py-4 rounded-[24px] bg-indigo-50/30 text-indigo-400 italic rounded-bl-none text-base border-2 border-dashed border-indigo-100 animate-pulse font-medium">
+                 <div className="max-w-[85%] px-4 lg:px-6 py-3 lg:py-4 rounded-[20px] lg:rounded-[24px] bg-indigo-50/30 text-indigo-400 italic rounded-bl-none text-sm lg:text-base border-2 border-dashed border-indigo-100 animate-pulse font-medium">
                     {transcription}...
                  </div>
                </div>
             )}
             {isThinking && (
                <div className="flex justify-start">
-                  <div className="bg-indigo-50/50 px-6 py-4 rounded-[24px] rounded-bl-none">
+                  <div className="bg-indigo-50/50 px-4 lg:px-6 py-3 lg:py-4 rounded-[20px] lg:rounded-[24px] rounded-bl-none">
                     <div className="flex space-x-1.5">
-                      <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce"></div>
-                      <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce delay-100"></div>
-                      <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce delay-200"></div>
+                      <div className="w-1.5 h-1.5 lg:w-2 lg:h-2 bg-indigo-400 rounded-full animate-bounce"></div>
+                      <div className="w-1.5 h-1.5 lg:w-2 lg:h-2 bg-indigo-400 rounded-full animate-bounce delay-100"></div>
+                      <div className="w-1.5 h-1.5 lg:w-2 lg:h-2 bg-indigo-400 rounded-full animate-bounce delay-200"></div>
                     </div>
                   </div>
                </div>
             )}
             {error && (
-              <div className="bg-red-50 border border-red-100 p-6 rounded-[24px] flex items-start gap-4 text-red-600 animate-in slide-in-from-top-4">
-                <AlertCircle className="w-6 h-6 shrink-0 mt-1" />
+              <div className="bg-red-50 border border-red-100 p-4 lg:p-6 rounded-[20px] lg:rounded-[24px] flex items-start gap-3 lg:gap-4 text-red-600 animate-in slide-in-from-top-4">
+                <AlertCircle className="w-5 h-5 lg:w-6 lg:h-6 shrink-0 mt-1" />
                 <div className="flex-1">
-                  <p className="font-black text-lg">Oops! Something went wrong.</p>
-                  <p className="text-sm font-bold opacity-80 mt-1">{error}</p>
+                  <p className="font-black text-base lg:text-lg">Oops! Something went wrong.</p>
+                  <p className="text-xs lg:text-sm font-bold opacity-80 mt-1">{error}</p>
                   <Button 
                     variant="primary"
                     size="sm"
                     onClick={messages.length === 0 ? greet : handleSendMessage}
-                    className="mt-4 !rounded-xl !bg-red-500 !shadow-none"
+                    className="mt-3 lg:mt-4 !rounded-xl !bg-red-500 !shadow-none"
                   >
                     <RefreshCw className="w-4 h-4 mr-2" /> Try Again
                   </Button>
@@ -375,7 +401,7 @@ export const LessonView: React.FC<LessonViewProps> = ({ companion, onEnd, onNavi
 
           {/* Input Area */}
           {!isLiveMode && (
-            <div className="p-4 lg:p-6 border-t border-indigo-50 bg-indigo-50/10 shrink-0">
+            <div className="p-3 lg:p-6 border-t border-indigo-50 bg-indigo-50/10 shrink-0">
               <div className="relative flex items-center max-w-4xl mx-auto w-full">
                  <input 
                   type="text" 
@@ -383,12 +409,12 @@ export const LessonView: React.FC<LessonViewProps> = ({ companion, onEnd, onNavi
                   onChange={(e) => setInputText(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
                   placeholder="Ask Richie anything..." 
-                  className="w-full bg-white border border-indigo-100 rounded-[20px] lg:rounded-[24px] py-4 lg:py-5 px-6 lg:px-8 pr-14 lg:pr-16 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all shadow-sm text-indigo-950 font-medium text-base lg:text-lg placeholder:text-indigo-200"
+                  className="w-full bg-white border border-indigo-100 rounded-[20px] lg:rounded-[24px] py-3.5 lg:py-5 px-5 lg:px-8 pr-12 lg:pr-16 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all shadow-sm text-indigo-950 font-medium text-sm lg:text-lg placeholder:text-indigo-200"
                  />
                  <button 
                   onClick={handleSendMessage}
                   disabled={isThinking || !inputText.trim()}
-                  className="absolute right-2 lg:right-3 p-2.5 lg:p-3 bg-indigo-600 text-white rounded-xl lg:rounded-2xl hover:bg-indigo-700 disabled:opacity-50 transition-all shadow-lg shadow-indigo-500/20 active:scale-90"
+                  className="absolute right-2 lg:right-3 p-2 lg:p-3 bg-indigo-600 text-white rounded-xl lg:rounded-2xl hover:bg-indigo-700 disabled:opacity-50 transition-all shadow-lg shadow-indigo-500/20 active:scale-90"
                  >
                    <Send className="w-5 h-5 lg:w-6 lg:h-6" />
                  </button>
@@ -398,7 +424,7 @@ export const LessonView: React.FC<LessonViewProps> = ({ companion, onEnd, onNavi
         </div>
 
         {/* Controls Section */}
-        <div className="flex flex-col space-y-4 lg:space-y-6 shrink-0">
+        <div className="flex flex-col space-y-3 lg:space-y-6 shrink-0 pb-4 lg:pb-0 overflow-y-auto lg:overflow-visible max-h-[40dvh] lg:max-h-none pr-1 lg:pr-0">
           <div className="hidden lg:flex bg-white border border-indigo-50 rounded-[40px] p-10 flex-col items-center justify-center text-center shadow-sm group overflow-hidden relative">
             <div className="absolute inset-0 bg-gradient-to-b from-indigo-50/50 to-transparent pointer-events-none"></div>
             
@@ -425,18 +451,18 @@ export const LessonView: React.FC<LessonViewProps> = ({ companion, onEnd, onNavi
           <div className="flex flex-row lg:flex-col gap-3 lg:gap-4">
             <button 
               onClick={toggleLiveMode}
-              className={`flex-1 flex items-center justify-between p-4 lg:p-6 rounded-[24px] lg:rounded-[32px] transition-all shadow-xl active:scale-95 group border-2 ${
+              className={`flex-1 flex items-center justify-between p-3.5 lg:p-6 rounded-[20px] lg:rounded-[32px] transition-all shadow-xl active:scale-95 group border-2 ${
                 isLiveMode 
                   ? 'bg-gradient-to-br from-indigo-600 to-purple-600 text-white border-transparent shadow-indigo-500/30' 
                   : 'bg-white text-indigo-950 border-indigo-50 hover:border-indigo-200 shadow-indigo-500/5'
               }`}
             >
               <div className="flex items-center">
-                 <div className={`p-3 lg:p-4 rounded-xl lg:rounded-2xl mr-3 lg:mr-5 transition-colors ${isLiveMode ? 'bg-white/20' : 'bg-indigo-50 text-indigo-600'}`}>
+                 <div className={`p-2.5 lg:p-4 rounded-xl lg:rounded-2xl mr-3 lg:mr-5 transition-colors ${isLiveMode ? 'bg-white/20' : 'bg-indigo-50 text-indigo-600'}`}>
                     <Mic className={`w-5 h-5 lg:w-7 lg:h-7 ${isLiveMode ? 'animate-pulse' : ''}`} />
                  </div>
                  <div className="text-left">
-                    <div className="text-[8px] lg:text-xs font-black uppercase tracking-widest opacity-70 mb-0.5 lg:mb-1">Interactive</div>
+                    <div className="text-[7px] lg:text-xs font-black uppercase tracking-widest opacity-70 mb-0.5 lg:mb-1">Interactive</div>
                     <div className="text-sm lg:text-lg font-black leading-none">Voice Mode</div>
                  </div>
               </div>
@@ -446,13 +472,13 @@ export const LessonView: React.FC<LessonViewProps> = ({ companion, onEnd, onNavi
             {isLiveMode && (
                <button 
                 onClick={() => setIsMuted(!isMuted)}
-                className={`flex items-center justify-center p-4 lg:p-6 rounded-[24px] lg:rounded-[32px] border-2 transition-all font-black uppercase tracking-widest text-[10px] lg:text-sm shadow-lg ${
+                className={`flex items-center justify-center p-3.5 lg:p-6 rounded-[20px] lg:rounded-[32px] border-2 transition-all font-black uppercase tracking-widest text-[9px] lg:text-sm shadow-lg ${
                   isMuted 
                   ? 'bg-red-50 text-red-600 border-red-100 shadow-red-200/50' 
                   : 'bg-white text-indigo-950 border-indigo-50 hover:bg-indigo-50 shadow-indigo-200/50'
                 }`}
                >
-                 {isMuted ? <MicOff className="w-5 h-5 lg:w-6 lg:h-6 mr-2 lg:mr-3" /> : <Mic className="w-5 h-5 lg:w-6 lg:h-6 mr-2 lg:mr-3" />}
+                 {isMuted ? <MicOff className="w-4 h-4 lg:w-6 lg:h-6 mr-2 lg:mr-3" /> : <Mic className="w-4 h-4 lg:w-6 lg:h-6 mr-2 lg:mr-3" />}
                  {isMuted ? 'Muted' : 'Unmuted'}
                </button>
             )}
@@ -461,7 +487,7 @@ export const LessonView: React.FC<LessonViewProps> = ({ companion, onEnd, onNavi
               variant="primary" 
               size="lg" 
               onClick={onEnd}
-              className="hidden lg:flex rounded-[32px] !py-6 text-xl font-black shadow-2xl shadow-indigo-500/40"
+              className="flex-1 lg:flex-none rounded-[20px] lg:rounded-[32px] !py-4 lg:!py-6 text-sm lg:text-xl font-black shadow-2xl shadow-indigo-500/40"
             >
               Finish Lesson
             </Button>
