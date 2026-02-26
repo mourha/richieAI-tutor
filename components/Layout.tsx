@@ -9,7 +9,9 @@ import {
   X,
   Sparkles,
   CreditCard,
-  LogIn
+  LogIn,
+  Info,
+  ShieldCheck
 } from 'lucide-react';
 import { AppView } from '../types';
 
@@ -23,12 +25,21 @@ interface LayoutProps {
 export const Layout: React.FC<LayoutProps> = ({ children, activeView, onNavigate, user }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 
-  const navItems = [
-    { id: 'dashboard', label: 'Home', icon: Home },
-    { id: 'library', label: 'Tutors', icon: Library },
-    { id: 'journey', label: 'Journey', icon: UserIcon },
-    { id: 'pricing', label: 'Pricing', icon: CreditCard },
-  ];
+  const navItems = user 
+    ? [
+        { id: 'dashboard', label: 'Dashboard', icon: Home },
+        { id: 'library', label: 'Tutors', icon: Library },
+        { id: 'journey', label: 'Journey', icon: UserIcon },
+        { id: 'pricing', label: 'Pricing', icon: CreditCard },
+        { id: 'about', label: 'About', icon: Info },
+        { id: 'admin', label: 'Admin', icon: ShieldCheck },
+      ]
+    : [
+        { id: 'home', label: 'Home', icon: Home },
+        { id: 'about', label: 'About', icon: Info },
+        { id: 'pricing', label: 'Pricing', icon: CreditCard },
+        { id: 'admin', label: 'Admin', icon: ShieldCheck },
+      ];
 
   const handleNavClick = (view: AppView) => {
     onNavigate(view);
@@ -39,7 +50,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeView, onNavigate
     <div className="min-h-[100dvh] flex flex-col bg-[#f8faff]">
       {/* Navbar */}
       <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-indigo-100/50 px-4 md:px-12 py-3 lg:py-4 flex items-center justify-between shadow-sm">
-        <div className="flex items-center cursor-pointer group" onClick={() => handleNavClick('dashboard')}>
+        <div className="flex items-center cursor-pointer group" onClick={() => handleNavClick(user ? 'dashboard' : 'home')}>
           <div className="w-12 h-12 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl flex items-center justify-center mr-4 shadow-xl shadow-indigo-500/20 group-hover:scale-105 transition-transform">
              <Sparkles className="text-white w-6 h-6" />
           </div>

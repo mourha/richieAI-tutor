@@ -29,4 +29,4 @@ export interface UserProgress {
   history: LessonRecord[];
 }
 
-export type AppView = 'dashboard' | 'library' | 'journey' | 'builder' | 'lesson' | 'pricing' | 'auth';
+export type AppView = 'home' | 'about' | 'dashboard' | 'library' | 'journey' | 'builder' | 'lesson' | 'pricing' | 'auth' | 'admin';

@@ -5,14 +5,48 @@ import { Sparkles, Plus, CheckCircle, Clock, Beaker, Calculator, Code, ArrowRigh
 import { Companion, LessonRecord, Subject, AppView } from '../types';
 import { INITIAL_COMPANIONS, SUBJECT_METADATA } from '../constants';
 import { Button } from './Button';
+import { CardSkeleton, TableRowSkeleton } from './Skeleton';
 
 interface DashboardProps {
   onNavigate: (view: AppView, companionId?: string) => void;
   recentLessons: LessonRecord[];
+  isLoading?: boolean;
 }
 
-export const Dashboard: React.FC<DashboardProps> = ({ onNavigate, recentLessons }) => {
+export const Dashboard: React.FC<DashboardProps> = ({ onNavigate, recentLessons, isLoading = false }) => {
   const featured = INITIAL_COMPANIONS.slice(0, 3);
+
+  if (isLoading) {
+    return (
+      <div className="space-y-8 lg:space-y-12 animate-in fade-in duration-500">
+        <header className="flex flex-col md:flex-row md:items-end justify-between gap-4 lg:gap-6">
+          <div className="space-y-2">
+            <div className="h-12 w-64 bg-indigo-50 animate-pulse rounded-xl" />
+            <div className="h-6 w-48 bg-indigo-50 animate-pulse rounded-lg" />
+          </div>
+          <div className="h-12 w-40 bg-indigo-50 animate-pulse rounded-xl" />
+        </header>
+
+        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+          <CardSkeleton />
+          <CardSkeleton />
+          <CardSkeleton />
+        </section>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 bg-white rounded-[32px] lg:rounded-[48px] border border-indigo-50 p-6 lg:p-10 shadow-sm">
+            <div className="h-8 w-48 bg-indigo-50 animate-pulse rounded-lg mb-8" />
+            <div className="space-y-4">
+              <TableRowSkeleton />
+              <TableRowSkeleton />
+              <TableRowSkeleton />
+            </div>
+          </div>
+          <div className="h-[400px] bg-indigo-50 animate-pulse rounded-[32px] lg:rounded-[48px]" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 lg:space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-700">

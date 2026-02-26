@@ -7,11 +7,14 @@ import { MyJourney } from './components/MyJourney';
 import { BuilderView } from './components/BuilderView';
 import { AuthView } from './components/AuthView';
 import { PricingView } from './components/PricingView';
+import { HomeView } from './components/HomeView';
+import { AboutView } from './components/AboutView';
+import { AdminDashboard } from './components/AdminDashboard';
 import { AppView, Companion, UserProgress } from './types';
 import { INITIAL_COMPANIONS } from './constants';
 
 const App: React.FC = () => {
-  const [activeView, setActiveView] = useState<AppView>('dashboard');
+  const [activeView, setActiveView] = useState<AppView>('home');
   const [user, setUser] = useState<{ name: string; email: string } | null>(null);
   const [selectedCompanionId, setSelectedCompanionId] = useState<string | null>(null);
   const [customCompanions, setCustomCompanions] = useState<Companion[]>([]);
@@ -82,6 +85,10 @@ const App: React.FC = () => {
 
   const renderContent = () => {
     switch (activeView) {
+      case 'home':
+        return <HomeView onNavigate={handleNavigate} />;
+      case 'about':
+        return <AboutView onNavigate={handleNavigate} />;
       case 'dashboard':
         return <Dashboard onNavigate={handleNavigate} recentLessons={userProgress.history.slice(0, 5)} />;
       case 'journey':
@@ -92,7 +99,9 @@ const App: React.FC = () => {
         const comp = allCompanions.find(c => c.id === selectedCompanionId) || allCompanions[0];
         return <LessonView companion={comp} onEnd={handleEndLesson} onNavigate={handleNavigate} />;
       case 'pricing':
-        return <PricingView />;
+        return <PricingView user={user} />;
+      case 'admin':
+        return <AdminDashboard />;
       case 'auth':
         return <AuthView onSuccess={() => {
           setUser({ name: 'Guest User', email: 'guest@example.com' });
